@@ -28,6 +28,7 @@ cd cdk-devsecops-cicd-pipeline
 ```bash
 python3.7 -m venv .venv
 source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ### Deploy to a sandbox environment
@@ -71,11 +72,11 @@ Example output:
 
 Outputs:
 SecToolsStack.SonarQubeSecretArnOutput = arn:aws:secretsmanager:us-east-1:<MY_SANDBOX_ACCOUNT_UD:secret:SonarQubeSecretABCXYZ
-SecToolsStack.SonarquebEcsTaskLoadBalancerABCXYZ = SecTo-Sonar-ABCXYZ.us-east-1.elb.amazonaws.com
-SecToolsStack.SonarquebEcsTaskServiceURLE4434029 = http://SecTo-Sonar-ABCXYZ.us-east-1.elb.amazonaws.com
+SecToolsStack.SonarquebEcsTaskLoadBalancerABCXYZ = SecTo-Sonar-ABCXYZ.<REGION>.elb.amazonaws.com
+SecToolsStack.SonarquebEcsTaskServiceURLE4434029 = http://SecTo-Sonar-ABCXYZ.<REGION>.elb.amazonaws.com
 ```
 
-To interact with SonarQube's APIs, you need to generate a user token. See [Generating and Using Tokens](https://docs.sonarqube.org/latest/user-guide/user-token/) on SonarQube's documentation to learn how to create yours. You'll also have to create a project on SonarQube to represent the sample application we are using in this reference implementation.
+To interact with SonarQube's APIs, you need to generate a user token. See [Generating and Using Tokens](https://docs.sonarqube.org/latest/user-guide/user-token/) on SonarQube's documentation to learn how to create yours. You'll also have to create a project on SonarQube to represent the sample application we are using in this reference implementation. The deployment of DB instance associated with SonarQube service can take between 15 to 20 minutes.
 
 As part of the `SecToolsStack`, a secret is created on [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/). Find on the CDK output on your terminal the ARN of this secret, which must be similar to `SecToolsStack.SonarQubeSecretArnOutput`. Update this secret with the SonarQube access data:
 ```bash
@@ -87,6 +88,12 @@ aws secretsmanager put-secret-value \
 The pipeline is sending the findings to [AWS Security Hub](https://aws.amazon.com/security-hub/). For that yo work, you have to enable Security Hub first:
 ```bash
 aws securityhub enable-security-hub
+```
+
+In order to activate [AWS CodeGuru Reviewer](https://aws.amazon.com/codeguru/)in your account and associate it to the repository used by the pipeline, just type the following command in the terminal:
+```bash
+aws codeguru-reviewer associate-repository \
+    --repository CodeCommit={Name=cdk-devsecops-cicd-pipeline}
 ```
 
 #### Deploy CI/CD pipeline
